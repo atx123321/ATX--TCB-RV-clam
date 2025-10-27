@@ -2619,6 +2619,9 @@ Player Region : {b.get('Account Region', 'N/A')}
 [FFFFFF][B]Add 100 likes to the account:  
 [FF69B4]/🗿likes/621[c]126[c]462[c]89
 
+[FFFFFF][B]Add Maxim likes to the account:  
+[FF69B4]/🗿maxim/621[c]126[c]462[c]89
+
 [FFFFFF][B] increes profile visit:  
 [9370DB]/🗿visit/621[c]126[c]462[c]89
 

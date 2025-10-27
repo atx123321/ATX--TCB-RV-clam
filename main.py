@@ -385,6 +385,52 @@ def send_likes(uid):
         return message
     except Exception as e:
         return f"Error: {str(e)}"
+
+def send_maxim_likes(uid):
+    try:
+        # New API endpoint for Maxim likes
+        likes_api_response = requests.get(
+            f"https://atxmaximlike-puce.vercel.app/{uid}/bd/atx2"
+        )
+
+        message = (
+            f"[C][B][FF0000]________________________\n"
+            f" Wrong ID .......\n"
+            f" Please Check Again\n"
+            f"________________________"
+        )
+
+        if likes_api_response.status_code == 200:
+            api_json_response = likes_api_response.json()
+
+            # Check if the response has the expected structure
+            if 'status' in api_json_response and api_json_response.get('status') != 2:
+                player_name = api_json_response.get('PlayerNickname', 'Unknown')
+                likes_before = api_json_response.get('LikesbeforeCommand', 0)
+                likes_after = api_json_response.get('LikesafterCommand', 0)
+                likes_added = api_json_response.get('LikesGivenByAPI', 0)
+
+                message = (
+                    f"________________________\n"
+                    f" Maxim Likes Status :\n"
+                    f" LIKES SENT !\n\n"
+                    f" PLAYER NAME : {player_name}\n"
+                    f" LIKES ADDED : {likes_added}\n"
+                    f" LIKES BEFORE : {likes_before}\n"
+                    f" LIKES AFTER : {likes_after}\n"
+                    f"________________________"
+                )
+            else:
+                message = (
+                    f"[C][B][FF0000]________________________\n"
+                    f" You have reached the daily maxim likes limit, please try again in 24 hours.\n"
+                    f" (Status: {api_json_response.get('status', 'Unknown')})\n"
+                    f"________________________"
+                )
+
+        return message
+    except Exception as e:
+        return f"Error: {str(e)}"
 ####################################
 def send_visits(uid):
     try:
@@ -2826,4 +2872,3 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(f"Error occurred: {e}")
         restart_program()
-

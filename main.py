@@ -54,14 +54,14 @@ freefire_version = "ob50"
 client_secret = "2ee44819e9b4598845141067b281621874d0d5d7af9d8f7e00c1e54715b7d1e3"
 chat_ip = "202.81.106.94"
 chat_port = 39698
-key2 = "ATX ABIR" # This seems like an API key, left as is.
+key2 = "ATXABIR" # This seems like an API key, left as is.
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 def encrypt_packet(plain_text, key, iv):
     plain_text = bytes.fromhex(plain_text)
     cipher = AES.new(key, AES.MODE_CBC, iv)
     cipher_text = cipher.encrypt(pad(plain_text, AES.block_size))
     return cipher_text.hex()
-
+    
 def gethashteam(hexxx):
     a = zitado_get_proto(hexxx)
     if not a:
@@ -101,7 +101,7 @@ def get_player_status(packet):
 
     if status == 1:
         return "SOLO"
-
+    
     if status == 2:
         if "9" in data and "data" in data["9"]:
             group_count = data["9"]["data"]
@@ -110,12 +110,12 @@ def get_player_status(packet):
             return f"INSQUAD ({group_count}/{countmax})"
 
         return "INSQUAD"
-
+    
     if status in [3, 5]:
         return "INGAME"
     if status == 4:
         return "IN ROOM"
-
+    
     if status in [6, 7]:
         return "IN SOCIAL ISLAND MODE .."
 
@@ -152,7 +152,7 @@ def fix_num(num):
 def fix_word(num):
     fixed = ""
     count = 0
-
+    
     for char in num:
         if char:
             count += 1
@@ -171,7 +171,7 @@ def rrrrrrrrrrrrrr(number):
 def Get_clan_info(clan_id):
     try:
         url = f"https://get-clan-info.vercel.app/get_clan_info?clan_id={clan_id}"
-        res = requests.get(url)
+        res = requests.get(url, timeout=5)
         if res.status_code == 200:
             data = res.json()
             msg = f""" 
@@ -215,7 +215,7 @@ Failed to get info, please try again later!!
 #GET INFO BY PLAYER ID
 def get_player_info(player_id):
     url = f"https://projects-fox-apis.vercel.app/player_info?uid={player_id}&key={key}"
-    response = requests.get(url)    
+    response = requests.get(url, timeout=5)    
     if response.status_code == 200:
         try:
             r = response.json()
@@ -241,7 +241,7 @@ def get_player_info(player_id):
 #CHAT WITH AI
 def talk_with_ai(question):
     url = f"https://princeaiapi.vercel.app/prince/api/v1/ask?key=prince&ask={question}"
-    res = requests.get(url)
+    res = requests.get(url, timeout=5)
     if res.status_code == 200:
         data = res.json()
         msg = data["message"]["content"]
@@ -253,7 +253,7 @@ def spam_requests(player_id):
     # This URL now correctly points to the Flask app you provided
     url = f"http://127.0.0.1:5002/send_requests?uid={player_id}"
     try:
-        res = requests.get(url, timeout=20) # Added a timeout
+        res = requests.get(url, timeout=5) # Added a timeout
         if res.status_code == 200:
             data = res.json()
             # Return a more descriptive message based on the API's JSON response
@@ -272,11 +272,11 @@ def newinfo(uid):
     try:
         # Updated the API URL to the new endpoint
         url = f"https://durant-o-five.vercel.app/player-info?region=bd&uid={uid}"
-        response = requests.get(url, timeout=10) # Added a timeout for better stability
+        response = requests.get(url, timeout=5) # Added a timeout for better stability
 
         if response.status_code == 200:
             api_data = response.json()
-
+            
             # This dictionary will be structured to be compatible with your script's commands
             processed_data = {}
 
@@ -321,7 +321,7 @@ def newinfo(uid):
                 }
             else:
                 processed_data['clan_admin'] = "false" # Maintain compatibility
-
+            
             return {"status": "ok", "info": processed_data}
 
         elif response.status_code == 500:
@@ -344,26 +344,26 @@ def send_likes(uid):
     try:
         # Updated API endpoint
         likes_api_response = requests.get(
-            f"https://dlxkelly.vercel.app/{uid}/bd/kelly"
+            f"https://atxmaximlike-puce.vercel.app/{uid}/bd/atx2", timeout=5
         )
-
+        
         message = (
             f"[C][B][FF0000]________________________\n"
             f" Wrong ID .......\n"
             f" Please Check Again\n"
             f"________________________"
         )
-
+        
         if likes_api_response.status_code == 200:
             api_json_response = likes_api_response.json()
-
+            
             # Check the status of likes (status 2 means the operation was not successful)
             if api_json_response.get('status') != 2:
                 player_name = api_json_response.get('PlayerNickname', 'Unknown')
                 likes_before = api_json_response.get('LikesbeforeCommand', 0)
                 likes_after = api_json_response.get('LikesafterCommand', 0)
                 likes_added = api_json_response.get('LikesGivenByAPI', 0)
-
+                
                 message = (
                     f"________________________\n"
                     f" Likes Status :\n"
@@ -381,53 +381,7 @@ def send_likes(uid):
                     f" (Status: {api_json_response.get('status')})\n"
                     f"________________________"
                 )
-
-        return message
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def send_maxim_likes(uid):
-    try:
-        # New API endpoint for Maxim likes
-        likes_api_response = requests.get(
-            f"https://atxmaximlike-puce.vercel.app/{uid}/bd/atx2"
-        )
-
-        message = (
-            f"[C][B][FF0000]________________________\n"
-            f" Wrong ID .......\n"
-            f" Please Check Again\n"
-            f"________________________"
-        )
-
-        if likes_api_response.status_code == 200:
-            api_json_response = likes_api_response.json()
-
-            # Check if the response has the expected structure
-            if 'status' in api_json_response and api_json_response.get('status') != 2:
-                player_name = api_json_response.get('PlayerNickname', 'Unknown')
-                likes_before = api_json_response.get('LikesbeforeCommand', 0)
-                likes_after = api_json_response.get('LikesafterCommand', 0)
-                likes_added = api_json_response.get('LikesGivenByAPI', 0)
-
-                message = (
-                    f"________________________\n"
-                    f" Maxim Likes Status :\n"
-                    f" LIKES SENT !\n\n"
-                    f" PLAYER NAME : {player_name}\n"
-                    f" LIKES ADDED : {likes_added}\n"
-                    f" LIKES BEFORE : {likes_before}\n"
-                    f" LIKES AFTER : {likes_after}\n"
-                    f"________________________"
-                )
-            else:
-                message = (
-                    f"[C][B][FF0000]________________________\n"
-                    f" You have reached the daily maxim likes limit, please try again in 24 hours.\n"
-                    f" (Status: {api_json_response.get('status', 'Unknown')})\n"
-                    f"________________________"
-                )
-
+                
         return message
     except Exception as e:
         return f"Error: {str(e)}"
@@ -442,15 +396,15 @@ def send_visits(uid):
                 f"Please Check The Number\n"
                 f"____\n"
             )
-
+        
         # New API endpoint
         api_url = f"http://community-ffbd.vercel.app/visit?uid={uid}"
         response = requests.get(api_url)
-
+        
         if response.status_code == 200:
             # Parse the JSON response
             response_data = response.json()
-
+            
             # Check if the response contains the success message
             if "message" in response_data and "Successfully Sent" in response_data["message"]:
                 return (
@@ -472,7 +426,7 @@ def send_visits(uid):
                 f"Sending Failed (Error Code: {response.status_code})\n"
                 f"____\n"
             )
-
+            
     except requests.exceptions.RequestException as e:
         return (
             f"[FF0000]____\n"
@@ -532,12 +486,12 @@ def  generate_random_word():
         "HAHAHAHAHAHA", "YOUR_PUSSY_IS_PINK", "I_WILL_FUCK_YOU", "EAT_IT_PIMP", "HEY_BITCH",
         "MY_DICK", "STRONG_PUSSY", "PUSSY", "GO_FUCK_YOURSELF", "LOSER",
         "HEY_WHORE", "MY_BITCH", "PUSSY", "FUCK_YOU_UP", "YOUR_PUSSY",
-        "LOSER", "FUCK_YOU", "FUCK_YOUR_MOM_SLANG", "FUCK_YOUR_MOM_SLANG2", "I_WILL_JERK_OFF_ON_YOU", "LICKER", " DURANTO", "YOUR_PAPA_ATX ABIR:@S_DD_F"
+        "LOSER", "FUCK_YOU", "FUCK_YOUR_MOM_SLANG", "FUCK_YOUR_MOM_SLANG2", "I_WILL_JERK_OFF_ON_YOU", "LICKER", " ATX ABIR", "YOUR_PAPA_DURANT:@S_DD_F"
     ]
 
     return random.choice(word_list)
 def generate_random_color():
-    color_list = [
+	color_list = [
     "[00FF00][b][c]",
     "[FFDD00][b][c]",
     "[3813F3][b][c]",
@@ -596,14 +550,14 @@ def generate_random_color():
     "[D3D3D3][b][c]",
     "[F0F0F0][b][c]"
 ]
-    random_color = random.choice(color_list)
-    return  random_color
+	random_color = random.choice(color_list)
+	return  random_color
 def get_random_avatar():
-    avatar_list = [
+	avatar_list = [
         '902000306'
     ]
-    random_avatar = random.choice(avatar_list)
-    return  random_avatar
+	random_avatar = random.choice(avatar_list)
+	return  random_avatar
 ##########################################	
 class FF_CLIENT(threading.Thread):
     def __init__(self, id, password):
@@ -959,7 +913,7 @@ class FF_CLIENT(threading.Thread):
         elif len(header_lenth_final) == 5:
             final_packet = "0515000" + header_lenth_final + self.nmnmmmmn(packet)
         return bytes.fromhex(final_packet)
-
+   
     def leave_s(self):
         fields = {
         1: 7,
@@ -1040,7 +994,7 @@ class FF_CLIENT(threading.Thread):
                 5: int(datetime.now().timestamp()),
                 7: 2,
                 9: {
-                    1: " XZA", 
+                    1: " ATX ABIR", 
                     2: int(get_random_avatar()),
                     3: 901049014,
                     4: 330,
@@ -1167,9 +1121,9 @@ class FF_CLIENT(threading.Thread):
             final_packet = "0E15000" + header_lenth_final + self.nmnmmmmn(packet)
         return bytes.fromhex(final_packet)
 
-
-
-
+        
+                
+                                
     def joinclanchat(self):
         fields = {
             1: 3,
@@ -1256,7 +1210,7 @@ class FF_CLIENT(threading.Thread):
                     print(aa)
                     ss = self.accept_sq(aa, tempid, int(ownerid))
                     socket_client.send(ss)
-                    sleep(1)
+                    sleep(0.1)
                     startauto = self.start_autooo()
                     socket_client.send(startauto)
                     start_par = False
@@ -1278,7 +1232,7 @@ class FF_CLIENT(threading.Thread):
                 print(packett)
                 kk = get_available_room(packett)
                 parsed_data = json.loads(kk)
-
+                
                 asdj = parsed_data["2"]["data"]
                 tempdata = get_player_status(packett)
                 if asdj == 15:
@@ -1290,11 +1244,11 @@ class FF_CLIENT(threading.Thread):
                         if tempdata == "IN ROOM":
                             idrooom = get_idroom_by_idplayer(packett)
                             idrooom1 = fix_num(idrooom)
-
+                            
                             tempdata = f"-ID : {idplayer1}\nstatus : {tempdata}\n-ID ROOM : {idrooom1}"
                             data22 = packett
                             print(data22)
-
+                            
                         if "INSQUAD" in tempdata:
                             idleader = get_leader(packett)
                             idleader1 = fix_num(idleader)
@@ -1305,8 +1259,8 @@ class FF_CLIENT(threading.Thread):
 
                     print(data2.hex())
                     print(tempdata)
-
-
+                
+                    
 
                 else:
                     pass
@@ -1320,20 +1274,20 @@ class FF_CLIENT(threading.Thread):
                 tempdata1 = get_player_status(packett)
                 if asdj == 14:
                     nameroom = parsed_data["5"]["data"]["1"]["data"]["2"]["data"]
-
+                    
                     maxplayer = parsed_data["5"]["data"]["1"]["data"]["7"]["data"]
                     maxplayer1 = fix_num(maxplayer)
                     nowplayer = parsed_data["5"]["data"]["1"]["data"]["6"]["data"]
                     nowplayer1 = fix_num(nowplayer)
                     tempdata1 = f"{tempdata}\nRoom name : {nameroom}\nMax player : {maxplayer1}\nLive player : {nowplayer1}"
                     print(tempdata1)
+                    
 
-
-
-
-
+                    
+                
+                    
             if data2 == b"":
-
+                
                 print("Connection closed by remote host")
                 restart_program()
                 break
@@ -1369,9 +1323,9 @@ class FF_CLIENT(threading.Thread):
                 print("Connection closed by remote host")
                 break
                 print(f"Received data: {data}")
-
+            
             if senthi == True:
-
+                
                 clients.send(
                         self.GenResponsMsg(
                             f"""[C][B]Hello, thanks for accepting the friend request. Send an emoji to know what to do."""
@@ -1415,7 +1369,7 @@ Enjoy the bot!
                     cleaned_message = message
                     for char in unwanted_chars:
                         cleaned_message = cleaned_message.replace(char, "")
-
+                    
                     try:
                         message_parts = cleaned_message.split()
                         iddd = None
@@ -1429,19 +1383,19 @@ Enjoy the bot!
                             iddd = 10414593349
                     except:
                         iddd = 10414593349
-
+                    
                     packetfinal = self.changes(4)
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
                     packetmaker = self.skwad_maker()
                     socket_client.send(packetmaker)
-                    sleep(1)
+                    sleep(0.1)
                     socket_client.send(packetfinal)
                     invitess = self.invite_skwad(iddd)
                     socket_client.send(invitess)
                     uid = parsed_data["5"]["data"]["1"]["data"]
                     iddd = fix_num(iddd)
-
+                    
                     # --- FIX IS HERE ---
                     # Removed the extra 'uid' argument from the function call
                     clients.send(self.GenResponsMsg(f"""
@@ -1452,8 +1406,8 @@ Enjoy the bot!
 °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
 [FFB300][b][c]BOT MADE BY ATX ABIR  
             """))
-
-                    sleep(5)
+            
+                    sleep(0.5)
                     leavee = self.leave_s()
                     socket_client.send(leavee)
                 except Exception as e:
@@ -1473,10 +1427,10 @@ Enjoy the bot!
             if "1200" in data.hex()[0:4] and b"/3s" in data:
                 json_result = get_available_room(data.hex()[10:])
                 parsed_data = json.loads(json_result)
-
+                
                 packetmaker = self.skwad_maker()
                 socket_client.send(packetmaker)             
-                sleep(1)
+                sleep(0.1)
                 packetfinal = self.changes(2)
                 iddd=parsed_data["5"]["data"]["1"]["data"]
                 socket_client.send(packetfinal)
@@ -1489,7 +1443,7 @@ Enjoy the bot!
     [11EAFD][b][c]
 °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
  Accept the request quickly!!!
-
+    
   °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
   [FFB300][b][c]BOT MADE BY ATX ABIR  
                             """
@@ -1505,7 +1459,7 @@ Enjoy the bot!
 
                 packetmaker = self.skwad_maker()
                 socket_client.send(packetmaker)             
-                sleep(1)
+                sleep(0.1)
                 packetfinal = self.changes(3)
                 iddd=parsed_data["5"]["data"]["1"]["data"]
                 socket_client.send(packetfinal)
@@ -1518,7 +1472,7 @@ Enjoy the bot!
     [11EAFD][b][c]
     °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
     Accept the request FAST!!!
-
+    
     °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
     [FFB300][b][c]BOT MADE BY ATX ABIR  
                             """
@@ -1531,10 +1485,10 @@ Enjoy the bot!
             if "1200" in data.hex()[0:4] and b"/5s" in data:
                 json_result = get_available_room(data.hex()[10:])
                 parsed_data = json.loads(json_result)
-
+                
                 packetmaker = self.skwad_maker()
                 socket_client.send(packetmaker)             
-                sleep(1)
+                sleep(0.1)
                 packetfinal = self.changes(4)
                 iddd=parsed_data["5"]["data"]["1"]["data"]
                 socket_client.send(packetfinal)
@@ -1547,7 +1501,7 @@ Enjoy the bot!
     [11EAFD][b][c]
     °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
     Accept the request FAST!!!
-
+    
     °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
     [FFB300][b][c]BOT MADE BY ATX ABIR  
                             """
@@ -1564,10 +1518,10 @@ Enjoy the bot!
                 try: # Added a try/except block for safety
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
-
+                    
                     packetmaker = self.skwad_maker()
                     socket_client.send(packetmaker)             
-                    sleep(1)
+                    sleep(0.1)
                     packetfinal = self.changes(5)
                     iddd=parsed_data["5"]["data"]["1"]["data"]
                     socket_client.send(packetfinal)
@@ -1587,7 +1541,7 @@ Accept the request FAST!!!
                                 """
                             )
                         )
-                    sleep(5)
+                    sleep(0.5)
                     leavee = self.leave_s()
                     socket_client.send(leavee)
                 except Exception as e:
@@ -1596,40 +1550,40 @@ Accept the request FAST!!!
             # GET PLAYER COMMAND
             if "1200" in data.hex()[0:4] and b"/inv/" in data:
                 try:
-
+                     
                     raw_message = data.decode('utf-8', errors='ignore')
                     cleaned_message = raw_message.replace('\x00', '').strip()
-
-
+                    
+                    
                     default_id = "10414593349"
                     iddd = default_id
-
+                    
                     try:
                         import re
                         # Search for the /inv/ pattern followed by numbers
                         id_match = re.search(r'/inv/(\d{5,15})\b', cleaned_message)
-
+                        
                         if id_match:
                             iddd = id_match.group(1)
-
+                             
                             if not (5 <= len(iddd) <= 15) or not iddd.isdigit():
                                 iddd = default_id
                         else:
-
+                             
                             temp_id = cleaned_message.split('/inv/')[1].split()[0].strip()
                             iddd = temp_id if temp_id.isdigit() and len(temp_id) >= 5 else default_id
-
+                        
                         # Handle special characters
                         iddd = iddd.replace("***", "106") if "***" in iddd else iddd
-
+                        
                     except Exception as e:
                         print(f"Player ID extraction error: {e}")
                         iddd = default_id
-
-
+            
+                    
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
-
+                    
                     uid = parsed_data["5"]["data"]["1"]["data"]
                     numsc = 5
                     packetmaker = self.skwad_maker()
@@ -1641,7 +1595,7 @@ Accept the request FAST!!!
                     socket_client.send(invitess)
                     invitessa = self.invite_skwad(uid)
                     socket_client.send(invitessa)
-
+                    
                     clients.send(self.GenResponsMsg(f"""
 [11EAFD][b][c]
 °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
@@ -1649,11 +1603,11 @@ Accept the request quickly!!!
  °°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
 [FFB300][b][c]BOT MADE BY ATX ABIR    
                 """))
-
-                    sleep(9)
+                    
+                    sleep(0.5)
                     leavee = self.leave_s()
                     socket_client.send(leavee)
-
+            
                 except Exception as e:
                     print(f"Get Player Command Error: {e}")
                     try:
@@ -1668,43 +1622,44 @@ Accept the request quickly!!!
             # SPAM JOIN SKWAD COMMAND
             if "1200" in data.hex()[0:4] and b"/sm/" in data:
                 try:
-
+                    
                     raw_message = data.decode('utf-8', errors='ignore')
                     cleaned_message = raw_message.replace('\x00', '').strip()
-
-
+                    
+                   
                     default_id = 10414593349
                     iddd = default_id
-
+                    
                     try:
                         import re
-
+                        
                         id_match = re.search(r'/sm/(\d{5,15})\b', cleaned_message)
-
+                        
                         if id_match:
                             iddd = int(id_match.group(1))
-
+                            
                             if not (5 <= len(str(iddd)) <= 15):
                                 iddd = default_id
                         else:
-
+                            
                             temp_id = cleaned_message.split('/sm/')[1].split()[0].strip()
                             iddd = int(temp_id) if temp_id.isdigit() and len(temp_id) >= 5 else default_id
-
+                            
                     except Exception as e:
                         print(f"Spam ID extraction error: {e}")
                         iddd = default_id
-
-
+            
+                    
                     json_result = get_available_room(data.hex()[10:])
                     invskwad = self.request_skwad(iddd)
                     socket_client.send(invskwad)
                     parsed_data = json.loads(json_result)
-
-
+                    
+                   
                     for _ in range(30):
                         socket_client.send(invskwad)
-
+                        time.sleep(0.01)
+                    
                     uid = parsed_data["5"]["data"]["1"]["data"]
                     iddd_display = fix_num(iddd)
                     clients.send(self.GenResponsMsg(f"""
@@ -1713,13 +1668,13 @@ Accept the request quickly!!!
 Join request spam has started for player:
 {iddd_display}
 ━━━━━━
-[808080][B][C]Credits: drakleafx 
+[808080][B][C]Credits: ATX ABIR 
             """))
-
-                    sleep(5)
+                    
+                    sleep(0.5)
                     leavee = self.leave_s()
                     socket_client.send(leavee)
-
+            
                 except Exception as e:
                     print(f"Spam Command Error: {e}")
                     restart_program()
@@ -1816,50 +1771,50 @@ Join request spam has started for player:
             # PLAYER STATUS COMMAND
             if "1200" in data.hex()[0:4] and b"/status/" in data:
                 try:
-
+                    
                     raw_message = data.decode('utf-8', errors='ignore')
                     cleaned_message = raw_message.replace('\x00', '').strip()
-
-
+                    
+                    
                     default_id = "10414593349"
                     player_id = default_id
-
+                    
                     try:
-
+                        
                         import re
                         id_match = re.search(r'/status/(\d{5,15})\b', cleaned_message)
-
+                        
                         if id_match:
                             player_id = id_match.group(1)
-
+                            
                             if not (5 <= len(player_id) <= 15) or not player_id.isdigit():
                                 player_id = default_id
                         else:
-
+                            
                             temp_id = cleaned_message.split('/status/')[1].split()[0].strip()
-
+                           
                             temp_id = temp_id.replace("***", "106") if "***" in temp_id else temp_id
                             player_id = temp_id if temp_id.isdigit() and len(temp_id) >= 5 else default_id
-
+                            
                     except Exception as extract_error:
                         print(f"ID extraction error: {extract_error}")
                         player_id = default_id
-
-
+            
+                    
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
 
                     packetmaker = self.createpacketinfo(player_id)
                     socket_client.send(packetmaker)
-                    sleep(1)                
+                    sleep(0.1)                
                     if statusinfo:
                         status_msg = f"[b][C][00FFFF]{tempdata}"
                         clients.send(self.GenResponsMsg(status_msg))
-
+                        
                 except Exception as e:
                     print(f"Player Status Command Error: {e}")
                     try:
-
+                        
                         json_result = get_available_room(data.hex()[10:])
                         parsed_data = json.loads(json_result)
                         uid = parsed_data["5"]["data"]["1"]["data"]
@@ -1919,35 +1874,35 @@ Status: {status}
             #GET ID REGION ->> COMMAND
             if "1200" in data.hex()[0:4] and b"/region/" in data:
                 try:
-
+                     
                     raw_message = data.decode('utf-8', errors='ignore')
                     cleaned_message = raw_message.replace('\x00', '').strip()
                     print(f"\nRaw Message: {raw_message}\nCleaned Message: {cleaned_message}\n")
-
+            
                     # Extract ID using regex
                     import re
                     id_match = re.search(r'/region/(\d{5,15})\b', cleaned_message)
-
+                    
                     if not id_match:
                         # Alternative attempt if the first one fails
                         id_match = re.search(r'/region/(\d+)', cleaned_message)
-
+                    
                     if id_match:
                         player_id = id_match.group(1)
                         print(f"Extracted Player ID: {player_id}")
-
+                        
                         # Check ID length
                         if not (5 <= len(player_id) <= 15):
                             raise ValueError("ID length must be between 5-15 digits")
                     else:
                         raise ValueError("No valid player ID found in the message")
-
+            
                     # Continue with the rest of the operations
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
 
                     clients.send(self.GenResponsMsg("Processing..."))
-
+                    
                     b = get_player_info(player_id)
                     player_id_fixed = fix_num(player_id)
                     response_message = f"""
@@ -1960,7 +1915,7 @@ Player Region : {b.get('Account Region', 'N/A')}
 [FFB300][b][c]BOT MADE BY ATX ABIR 
                 """
                     clients.send(self.GenResponsMsg(response_message))
-
+            
                 except Exception as e:
                     print(f"\nError: {e}\n")
                     try:
@@ -1972,7 +1927,7 @@ Player Region : {b.get('Account Region', 'N/A')}
                     except Exception as inner_e:
                         print(f"\nCritical Error: {inner_e}\n")
                         restart_program()
-
+                        
                # SPAM FRIEND REQUESTS COMMAND (Modified with local API)
             if "1200" in data.hex()[0:4] and b"/spm/" in data:
                 try:
@@ -2000,13 +1955,13 @@ Player Region : {b.get('Account Region', 'N/A')}
                     response_message = ""
                     try:
                         api_url = f"http://127.0.0.1:5002/send_requests?uid={player_id}"
-                        response = requests.get(api_url, timeout=25) # Timeout of 25 seconds
+                        response = requests.get(api_url, timeout=5) # Timeout of 25 seconds
 
                         if response.status_code == 200:
                             api_data = response.json()
                             success_count = api_data.get("success_count", 0)
                             failed_count = api_data.get("failed_count", 0)
-
+                            
                             response_message = f"""
 [C][B][11EAFD]‎━━━━━━
 [FFFFFF]Spam Request API Response:
@@ -2047,33 +2002,33 @@ Player Region : {b.get('Account Region', 'N/A')}
                 try:
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
-
+                    
                     clients.send(self.GenResponsMsg("Connecting to AI..."))
-
+                    
                     # Extract the question more robustly
                     try:
                         raw_message = data.decode('utf-8', errors='ignore').replace('\x00', '')
                         question_part = raw_message.split('/ai')[1]
-
+                        
                         # Clean the question from unwanted characters
                         unwanted_chars = ["***", "\\x", "\x00"]
                         cleaned_question = question_part
                         for char in unwanted_chars:
                             cleaned_question = cleaned_question.replace(char, "")
-
+                            
                         question = cleaned_question.strip()
                         if not question:
                             raise ValueError("No question provided")
-
+                            
                         # Replace *** with a default value
                         question = question.replace("***", "106") if "***" in question else question
-
+                        
                         ai_msg = talk_with_ai(question)
                         clients.send(self.GenResponsMsg(ai_msg))
                     except Exception as ai_error:
                         print(f"AI Processing Error: {ai_error}")
                         restart_program()
-
+            
                 except Exception as e:
                     print(f"AI Command Error: {e}")
                     restart_program()
@@ -2081,23 +2036,23 @@ Player Region : {b.get('Account Region', 'N/A')}
             # CLAN INFO COMMAND
             if "1200" in data.hex()[0:4] and b"/clan/" in data:
                 try:
-
+                     
                     raw_message = data.decode('utf-8', errors='ignore')
                     cleaned_message = raw_message.replace('\x00', '').strip()
-
+                    
                     # Advanced Clan ID extraction
                     default_clan_id = "3022534803"
                     clan_id = default_clan_id  # Default value
-
+                    
                     try:
                         import re
                         # First attempt: search for /clan/ followed by numbers
                         id_match = re.search(r'/clan/(\d{5,15})\b', cleaned_message)
-
+                        
                         if id_match:
                             clan_id = id_match.group(1)
                             print(f"Extracted Clan ID: {clan_id}")
-
+                            
                             # Validate the ID
                             if not (5 <= len(clan_id) <= 15) or not clan_id.isdigit():
                                 print("Invalid Clan ID format, using default")
@@ -2115,20 +2070,20 @@ Player Region : {b.get('Account Region', 'N/A')}
                             else:
                                 print("No Clan ID found, using default")
                                 clan_id = default_clan_id
-
+                                
                     except Exception as extract_error:
                         print(f"Clan ID extraction error: {extract_error}, using default")
                         clan_id = default_clan_id
-
+            
                     # Continue with the rest of the operations
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
 
                     clients.send(self.GenResponsMsg("Fetching clan info..."))
-
+                    
                     clan_info_msg = Get_clan_info(clan_id)
                     clients.send(self.GenResponsMsg(clan_info_msg))
-
+            
                 except Exception as e:
                     print(f"\nClan Processing Error: {e}\n")
                     try:
@@ -2145,7 +2100,7 @@ Player Region : {b.get('Account Region', 'N/A')}
                     import re
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
-
+                    
                     uid = parsed_data["5"]["data"]["1"]["data"]
                     split_data = re.split(rb'/room', data)
                     if len(split_data) > 1:
@@ -2202,35 +2157,35 @@ Player Region : {b.get('Account Region', 'N/A')}
                     print(f"Error in /room command: {e}")
                     clients.send(self.GenResponsMsg("[FF0000]An error occurred."))
 ####################################
-
+            
             # ** FINAL CORRECTED /info COMMAND HANDLER **
             if "1200" in data.hex()[0:4] and b"/info" in data:
                 try:
                     raw_message = data.decode('utf-8', errors='ignore')
                     # This regex is more flexible: it allows a space or no space
                     match = re.search(r'/info\s*(\d{5,15})', raw_message)
-
+                    
                     if not match:
                         clients.send(self.GenResponsMsg("[FF0000]Invalid format. Use: /info<UID>"))
                         continue
 
                     uid = match.group(1)
-
+                    
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
                     sender_name = parsed_data.get('5', {}).get('data', {}).get('9', {}).get('data', {}).get('1', {}).get('data', 'Unknown User')
 
                     clients.send(self.GenResponsMsg(f"{generate_random_color()}Searching for UID {uid} in BD server..."))
-
+                    
                     # Always calls the simplified newinfo function
                     info_response = newinfo(uid)
-
+                    
                     if info_response['status'] == "ok":
                         info_data = info_response['info']
                         basic_info = info_data.get('basic_info', {})
                         clan_info = info_data.get('clan_info', {})
                         clan_admin_info = info_data.get('clan_admin', {})
-
+                        
                         clan_info_msg = "\n[C][FF0000]Player is not in a clan.\n"
                         if clan_info != "false" and clan_admin_info != "false":
                             clan_info_msg = (
@@ -2272,7 +2227,7 @@ Player Region : {b.get('Account Region', 'N/A')}
                             f"[FFFF00]Reason: {error_detail}\n"
                             f"[FF0000]-----------------------------------"
                         )
-
+                    
                     clients.send(self.GenResponsMsg(message_info))
 
                 except Exception as e:
@@ -2284,26 +2239,26 @@ Player Region : {b.get('Account Region', 'N/A')}
             if "1200" in data.hex()[0:4] and b"/likes/" in data:
                 import re
                 try:
-
+                     
                     raw_message = data.decode('utf-8', errors='ignore')
                     cleaned_message = raw_message.replace('\x00', '').strip()
-
-
+                    
+                    
                     default_id = "10414593349"
                     player_id = default_id
-
+                    
                     try:
                         id_match = re.search(r'/likes/(\d{5,15})\b', cleaned_message)
-
+                        
                         if id_match:
                             player_id = id_match.group(1)
-
+                             
                             if not (5 <= len(player_id) <= 15) or not player_id.isdigit():
                                 player_id = default_id
                         else:                             
                             temp_id = cleaned_message.split('/likes/')[1].split()[0].strip()
                             player_id = temp_id if temp_id.isdigit() and len(temp_id) >= 5 else default_id
-
+                            
                     except Exception as e:
                         print(f"Likes ID extraction error: {e}")
                         player_id = default_id               
@@ -2313,16 +2268,16 @@ Player Region : {b.get('Account Region', 'N/A')}
                     sender_id = parsed_data["5"]["data"]["1"]["data"]
                     sender_name = parsed_data['5']['data']['9']['data']['1']['data']
                     if "" not in sender_name:
-                        clients.send(
+	                    clients.send(
             self.GenResponsMsg(
                 f"[C][B][FF0000]Access Denied!\n[ffffff]Only users with [St] in their name can use this command."
             )
         )
                     else:
-                        clients.send(self.GenResponsMsg("Sending likes..."))                    
-                        likes_info = send_likes(player_id)
-                        player_id = fix_num(player_id)
-                        clients.send(self.GenResponsMsg(likes_info)) 
+	                    clients.send(self.GenResponsMsg("Sending likes..."))                    
+	                    likes_info = send_likes(player_id)
+	                    player_id = fix_num(player_id)
+	                    clients.send(self.GenResponsMsg(likes_info)) 
                 except Exception as e:
                     print(f"Likes Command Error: {e}")
                     try:
@@ -2341,22 +2296,22 @@ Player Region : {b.get('Account Region', 'N/A')}
                     # Extract player ID and spam count from command
                     raw_message = data.decode('utf-8', errors='ignore')
                     cleaned_message = raw_message.replace('\x00', '').strip()
-
+                    
                     default_id = "10414593349"
                     default_spam_count = 30
                     player_id = default_id
                     spam_count = default_spam_count
-
+                    
                     try:
                         import re
                         # Match pattern: /gt/player_id/spam_count
                         id_match = re.search(r'/gt/(\d{5,15})(?:/(\d+))?', cleaned_message)
-
+                        
                         if id_match:
                             player_id = id_match.group(1)
                             if id_match.group(2):  # If spam count is provided
                                 spam_count = int(id_match.group(2))
-
+                            
                             if not (5 <= len(player_id) <= 15) or not player_id.isdigit():
                                 player_id = default_id
                         else:
@@ -2367,47 +2322,47 @@ Player Region : {b.get('Account Region', 'N/A')}
                                     player_id = parts[0]
                                 if len(parts) > 1 and parts[1].isdigit():
                                     spam_count = int(parts[1])
-
+                                    
                     except Exception as e:
                         print(f"GT ID extraction error: {e}")
                         player_id = default_id
                         spam_count = default_spam_count
-
+                    
                     # Limit spam count to prevent abuse - MAXIMUM 300
                     spam_count = min(spam_count, 300)  # Max 300 spams
-
+                    
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
                     uid = parsed_data["5"]["data"]["1"]["data"]
-
+                    
                     clients.send(self.GenResponsMsg(f"{generate_random_color()}🚀 Starting {spam_count} solo spams..."))
-
+                    
                     for i in range(spam_count):
                         try:
                             # 1. Create squad
                             packetmaker = self.skwad_maker()
                             socket_client.send(packetmaker)
                             time.sleep(0.1)
-
+                            
                             # 2. Send invite to player
                             invitess = self.invite_skwad(player_id)
                             socket_client.send(invitess)
                             time.sleep(0.1)
-
+                            
                             # 3. Leave squad quickly
                             leavee = self.leave_s()
                             socket_client.send(leavee)
                             time.sleep(0.1)
-
+                            
                             # 4. Return to solo mode
                             change_to_solo = self.changes(1)
                             socket_client.send(change_to_solo)
                             time.sleep(0.1)
-
+                            
                         except Exception as e:
                             print(f"Error in spam loop: {e}")
                             continue
-
+                    
                     player_id_fixed = fix_num(player_id)
                     clients.send(
                         self.GenResponsMsg(
@@ -2415,7 +2370,7 @@ Player Region : {b.get('Account Region', 'N/A')}
                             f"Target: {player_id_fixed}"
                         )
                     )
-
+                    
                 except Exception as e:
                     print(f"GT Command Error: {e}")
                     try:
@@ -2431,14 +2386,14 @@ Player Region : {b.get('Account Region', 'N/A')}
                 try:
                     raw_message = data.decode('utf-8', errors='ignore')
                     cleaned_message = raw_message.replace('\x00', '').strip()
-
+                    
                     default_id = "10414593349"
                     player_id = default_id
-
+                    
                     try:
                         import re
                         id_match = re.search(r'/visit/(\d{5,15})\b', cleaned_message)
-
+                        
                         if id_match:
                             player_id = id_match.group(1)
                             if not (5 <= len(player_id) <= 15) or not player_id.isdigit():
@@ -2446,20 +2401,20 @@ Player Region : {b.get('Account Region', 'N/A')}
                         else:
                             temp_id = cleaned_message.split('/visit/')[1].split()[0].strip()
                             player_id = temp_id if temp_id.isdigit() and len(temp_id) >= 5 else default_id
-
+                            
                     except Exception as e:
                         print(f"Visit ID extraction error: {e}")
                         player_id = default_id
-
+                    
                     json_result = get_available_room(data.hex()[10:])
                     parsed_data = json.loads(json_result)
                     uid = parsed_data["5"]["data"]["1"]["data"]
-
+                    
                     clients.send(self.GenResponsMsg(f"{generate_random_color()}Sending 1000 visits to {fix_num(player_id)}..."))
-
+                    
                     message = send_visits(player_id)
                     clients.send(self.GenResponsMsg(message))
-
+                    
                 except Exception as e:
                     print(f"Visit Command Error: {e}")
                     try:
@@ -2491,7 +2446,7 @@ Player Region : {b.get('Account Region', 'N/A')}
                     # Allow the user to specify the number of sends
                     if len(command_parts) > 1 and command_parts[1].isdigit():
                         spam_count = int(command_parts[1])
-
+                    
                     # Set a maximum of 50 times to prevent issues
                     if spam_count > 50:
                         spam_count = 50
@@ -2529,7 +2484,7 @@ Player Region : {b.get('Account Region', 'N/A')}
                         clients.send(self.GenResponsMsg(f"[FF0000]Error joining team: {str(e)}"))
                     except:
                         pass
-
+                        
 ##
 # SOLO MODE COMMAND - Leave squad and return to solo
             if "1200" in data.hex()[0:4] and b"/solo" in data:
@@ -2619,9 +2574,6 @@ Player Region : {b.get('Account Region', 'N/A')}
 [FFFFFF][B]Add 100 likes to the account:  
 [FF69B4]/🗿likes/621[c]126[c]462[c]89
 
-[FFFFFF][B]Add Maxim likes to the account:  
-[FF69B4]/🗿maxim/621[c]126[c]462[c]89
-
 [FFFFFF][B] increes profile visit:  
 [9370DB]/🗿visit/621[c]126[c]462[c]89
 
@@ -2648,11 +2600,11 @@ Player Region : {b.get('Account Region', 'N/A')}
 
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+    
     def  parse_my_message(self, serialized_data):
         MajorLogRes = MajorLoginRes_pb2.MajorLoginRes()
         MajorLogRes.ParseFromString(serialized_data)
-
+        
         timestamp = MajorLogRes.kts
         key = MajorLogRes.ak
         iv = MajorLogRes.aiv
@@ -2684,7 +2636,7 @@ Player Region : {b.get('Account Region', 'N/A')}
         PAYLOAD = bytes.fromhex(PAYLOAD)
         ip,port = self.GET_LOGIN_DATA(JWT_TOKEN , PAYLOAD)
         return ip,port
-
+    
     def dec_to_hex(ask):
         ask_result = hex(ask)
         final_result = str(ask_result)[2:]
@@ -2713,7 +2665,7 @@ Player Region : {b.get('Account Region', 'N/A')}
             'Connection': 'close',
             'Accept-Encoding': 'gzip, deflate, br',
         }
-
+        
         max_retries = 3
         attempt = 0
 
@@ -2729,7 +2681,7 @@ Player Region : {b.get('Account Region', 'N/A')}
                 ip = address[:len(address) - 6]
                 port = address[len(address) - 5:]
                 return ip, port
-
+            
             except requests.RequestException as e:
                 print(f"Request failed: {e}. Attempt {attempt + 1} of {max_retries}. Retrying...")
                 attempt += 1
@@ -2751,7 +2703,7 @@ Player Region : {b.get('Account Region', 'N/A')}
         time.sleep(0.2)
         data = self.TOKEN_MAKER(OLD_ACCESS_TOKEN , NEW_ACCESS_TOKEN , OLD_OPEN_ID , NEW_OPEN_ID,uid)
         return(data)
-
+        
     def TOKEN_MAKER(self,OLD_ACCESS_TOKEN , NEW_ACCESS_TOKEN , OLD_OPEN_ID , NEW_OPEN_ID,id):
         headers = {
             'X-Unity-Version': '2018.4.11f1',
@@ -2773,7 +2725,7 @@ Player Region : {b.get('Account Region', 'N/A')}
         URL = "https://loginbp.ggblueshark.com/MajorLogin"
 
         RESPONSE = requests.post(URL, headers=headers, data=Final_Payload,verify=False)
-
+        
         combined_timestamp, key, iv, BASE64_TOKEN = self.parse_my_message(RESPONSE.content)
         if RESPONSE.status_code == 200:
             if len(RESPONSE.text) < 10:
@@ -2785,20 +2737,20 @@ Player Region : {b.get('Account Region', 'N/A')}
             return(BASE64_TOKEN,key,iv,combined_timestamp,ip,port)
         else:
             return False
-
+    
     def time_to_seconds(hours, minutes, seconds):
         return (hours * 3600) + (minutes * 60) + seconds
 
     def seconds_to_hex(seconds):
         return format(seconds, '04x')
-
+    
     def extract_time_from_timestamp(timestamp):
         dt = datetime.fromtimestamp(timestamp)
         h = dt.hour
         m = dt.minute
         s = dt.second
         return h, m, s
-
+    
     def get_tok(self):
         global g_token
         token, key, iv, Timestamp, ip, port = self.guest_token(self.id, self.password)
@@ -2838,10 +2790,10 @@ Player Region : {b.get('Account Region', 'N/A')}
             print(f"Error constructing final token: {e}")
         token = final_token
         self.connect(token, ip, port, 'anything', key, iv)
-
-
+        
+      
         return token, key, iv
-
+        
 with open('accs.txt', 'r') as file:
     data = json.load(file)
 ids_passwords = list(data.items())
@@ -2849,7 +2801,7 @@ def run_client(id, password):
     print(f"ID: {id}, Password: {password}")
     client = FF_CLIENT(id, password)
     client.start()
-
+    
 max_range = 300000
 num_clients = len(ids_passwords)
 num_threads = 1
@@ -2867,7 +2819,7 @@ for i in range(num_threads):
 
 for thread in threads:
     thread.join()
-
+    
 if __name__ == "__main__":
     try:
         client_thread = FF_CLIENT(id="4224026694", password="1E3966EC6918392A65F1A36CD5BD007EAAF2590821B3458BF07B54B06BFE7AC2")
@@ -2875,3 +2827,4 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(f"Error occurred: {e}")
         restart_program()
+
